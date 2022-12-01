@@ -1,0 +1,957 @@
+#include <stdlib.h>
+#include <stdio.h>
+#define MAX 1000
+
+typedef struct GRAPHMATRIX_STRU
+{
+    int size; //图中结点的个数
+    int** graph; //二维数组保存图
+}GraphMatrix;
+
+GraphMatrix* InitGraph(int num)  //邻接矩阵初始化
+{
+    int i;
+    int j;
+    GraphMatrix* graphMatrix = (GraphMatrix*)malloc(sizeof(GraphMatrix));
+    graphMatrix->size = num;
+    graphMatrix->graph = (int**)malloc(sizeof(int*) * graphMatrix->size);
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        graphMatrix->graph[i] = (int*)malloc(sizeof(int) * graphMatrix->size);
+    }
+
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        for (j = 0; j < graphMatrix->size; j++)
+        {
+            graphMatrix->graph[i][j] = MAX;
+        }
+    }
+    return graphMatrix;
+}
+
+void ReadGraph(GraphMatrix* graphMatrix)
+{
+    int vex1, vex2;
+    scanf("%d %d", &vex1, &vex2);
+    while (vex1 != 0 || vex2 != 0)
+    {
+        graphMatrix->graph[vex1][vex2] = 1;
+        scanf("%d %d", &vex1, &vex2);
+    }
+}
+
+int IsPathway(GraphMatrix* graphMatrix)
+{
+    int i, j;
+    scanf("%d %d", &i, &j);
+    if (graphMatrix->graph[i][j] == 1)
+        return 0;
+    else
+        return 1;
+}
+
+int main()
+{
+    GraphMatrix* graphMatrix = NULL;
+    graphMatrix = InitGraph(7);
+    ReadGraph(graphMatrix);
+    int i = IsPathway(graphMatrix);
+    printf("%d", i);
+
+}
+
+
+
+---------------------------------------------------------------
+
+
+
+#include <stdlib.h>
+#include <stdio.h>
+
+typedef struct GRAPHLISTNODE_STRU
+{
+    int nodeno;  /*图中结点的编号 */
+    struct GRAPHLISTNODE_STRU* next;  /*指向下一个结点的指针 */
+}GraphListNode;
+
+typedef struct GRAPHLIST_STRU
+{
+    int size; /* 图中结点的个数 */
+    GraphListNode* graphListArray; /*图的邻接表 */
+}GraphList;
+
+GraphList* InitGraph(int num) //邻接表初始化
+{
+    int i;
+    GraphList* graphList = (GraphList*)malloc(sizeof(GraphList));
+    graphList->size = num;
+    graphList->graphListArray = (GraphListNode*)malloc(sizeof(GraphListNode) * num);
+    for (i = 0; i < num; i++)
+    {
+        graphList->graphListArray[i].next = NULL;
+        graphList->graphListArray[i].nodeno = i;
+    }
+    return graphList;
+}
+
+void ReadGraph(GraphList* graphList)  //创建邻接表
+{
+    int vex1, vex2;
+    GraphListNode* tempNode = NULL;
+
+    /** 输入方式为点 点 ，点为-1，则输入结束 **/
+    scanf("%d %d", &vex1, &vex2);
+    while (vex1 >= 0 && vex2 >= 0)
+    {
+        tempNode = (GraphListNode*)malloc(sizeof(GraphListNode));
+        tempNode->nodeno = vex2;
+        tempNode->next = NULL;
+        /**采用头插法**/
+        tempNode->next = graphList->graphListArray[vex1].next;
+        graphList->graphListArray[vex1].next = tempNode;
+        scanf("%d %d", &vex1, &vex2);
+    }
+}
+
+typedef int DataType;
+struct Node {
+    DataType data;
+    struct Node* next;
+};
+typedef struct Node* PNode;
+typedef struct Node* LinkStack;
+
+LinkStack SetNullStack_Link()
+{
+    LinkStack top = (LinkStack)malloc(sizeof(struct Node));
+    if (top != NULL) top->next = NULL;
+    else printf("Alloc failure");
+    return top;
+}
+
+int IsNullStack_link(LinkStack top)
+{
+    if (top->next == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+void Push_link(LinkStack top, DataType x)
+{
+    PNode p;
+    p = (PNode)malloc(sizeof(struct Node));
+    if (p == NULL)
+        printf("Alloc failure");
+    else
+    {
+        p->data = x;
+        p->next = top->next;
+        top->next = p;
+    }
+}
+
+void Pop_link(LinkStack top)
+{
+    PNode p;
+    if (top->next == NULL)
+        printf("it is empty stack!");
+    else
+    {
+        p = top->next;
+        top->next = p->next;
+        free(p);
+    }
+}
+
+DataType Top_link(LinkStack top)
+{
+    if (top->next == NULL)
+    {
+        printf("It is empty stack!");
+        return 0;
+    }
+    else
+        return top->next->data;
+}
+
+int TopologicalSort(GraphList* graphList)
+{
+    int vex;
+    int count = 0; //用于判断是否完成拓扑排序
+    int* inpoint = (int*)malloc(sizeof(int) * graphList->size);
+    LinkStack stack = SetNullStack_Link();
+    GraphListNode* p = NULL;
+    for (vex = 0; vex < graphList->size; vex++)
+        inpoint[vex] = 0;
+
+    for (vex = 0; vex < graphList->size; vex++) //计算各顶点的入度
+    {
+        p = graphList->graphListArray[vex].next;
+        while (p != NULL)
+        {
+            inpoint[p->nodeno]++;
+            p = p->next;
+        }
+    }
+
+    for (vex = 0; vex < graphList->size; vex++) //将入度为0的顶点入栈
+    {
+        if (inpoint[vex] == 0)
+            Push_link(stack, vex);
+    }
+    
+    while (!IsNullStack_link(stack))
+    {
+        int tempvex = Top_link(stack);
+        count++;
+        Pop_link(stack);
+        p = graphList->graphListArray[tempvex].next;
+        while (p != NULL)
+        {
+            inpoint[p->nodeno]--;  //将该结点出边表中的各顶点的入度减1
+            if (inpoint[p->nodeno] == 0)  //再减完1之后该顶点的入度为0、则入栈
+                Push_link(stack, p->nodeno);
+            p = p->next;
+        }
+    }
+    if (count == graphList->size)
+        return 0;
+    else
+        return 1;
+    
+}
+
+int main()
+{
+    GraphList* graphList = NULL;
+    graphList = InitGraph(6);
+    ReadGraph(graphList);
+    int i = TopologicalSort(graphList);
+    printf("%d", i);
+}
+
+
+-----------------------------------------------------
+
+
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+#define MAX 1000
+#define INT_MAX 2147483647
+typedef struct GRAPHMATRIX_STRU
+{
+    int size; //图中结点的个数
+    int** graph; //二维数组保存图
+}GraphMatrix;
+
+GraphMatrix* InitGraph(int num)  //邻接矩阵初始化
+{
+    int i;
+    int j;
+    GraphMatrix* graphMatrix = (GraphMatrix*)malloc(sizeof(GraphMatrix));
+    graphMatrix->size = num;
+    graphMatrix->graph = (int**)malloc(sizeof(int*) * graphMatrix->size);
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        graphMatrix->graph[i] = (int*)malloc(sizeof(int) * graphMatrix->size);
+    }
+
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        for (j = 0; j < graphMatrix->size; j++)
+        {
+            graphMatrix->graph[i][j] = MAX;
+        }
+    }
+    return graphMatrix;
+}
+
+void ReadGraph(GraphMatrix* graphMatrix)
+{
+    int vex1, vex2, weight;
+    //输入方式为点 点 权值，权值为0，则输入结束
+    scanf("%d %d %d", &vex1, &vex2, &weight);
+    while (weight != 0)
+    {
+        graphMatrix->graph[vex1][vex2] = weight;
+        scanf("%d %d %d", &vex1, &vex2, &weight);
+    }
+}
+
+GraphMatrix* prim(GraphMatrix* graphMatrix)
+{
+    int source = 0; //起点
+    int* component = (int*)malloc(sizeof(int) * graphMatrix->size); //记录该点是否加入最小生成树
+    int* distance = (int*)malloc(sizeof(int) * graphMatrix->size);  //记录代价（距离）
+    int* neighbor = (int*)malloc(sizeof(int) * graphMatrix->size);
+    GraphMatrix* newtree = InitGraph(6);
+    for (int i = 0; i < graphMatrix->size; i++) //初始化
+    {
+        component[i] = 0;
+        distance[i] = graphMatrix->graph[source][i];
+        neighbor[i] = source;
+    }
+    component[source] = 1; //起点加入最小生成树
+
+    for (int i = 1; i < graphMatrix->size; i++)
+    {
+        int min = INT_MAX;
+        int x; //记录下标
+        for (int j = 0; j < graphMatrix->size; j++)
+        {
+            if (distance[j] < min && component[j] != 1)
+            {
+                min = distance[j];
+                x = j;
+            }
+        }
+
+        if (min < INT_MAX) //加入最小生成树
+        {
+            component[x] = 1;
+            newtree->graph[x][neighbor[x]] = min;
+            newtree->graph[neighbor[x]][x] = min;
+
+            for (int j = 0; j < graphMatrix->size; j++) //更新距离
+            {
+                if (graphMatrix->graph[x][j] < distance[j] && component[j] != 1)
+                {
+                    distance[j] = graphMatrix->graph[x][j];
+                    neighbor[j] = x;
+                }
+            }
+        }
+    }
+    return newtree;
+}
+
+void print_weight(GraphMatrix* graphMatrix)
+{
+    int sum = 0;
+    for (int i = 0; i < graphMatrix->size; i++)
+    {
+        for (int j = graphMatrix->size - 1; j > i; j--)
+        {
+            if (graphMatrix->graph[i][j] != MAX)
+                sum += graphMatrix->graph[i][j];
+        }
+    }
+    printf("%d", sum);
+}
+
+int main()
+{
+    GraphMatrix* graphMatrix = InitGraph(6);
+    ReadGraph(graphMatrix);
+    GraphMatrix* newtree = prim(graphMatrix);
+    print_weight(newtree);
+}
+
+
+
+---------------------------------------------------
+
+
+
+
+
+
+
+#define MAX 1000
+#include<stdio.h>
+#include<stdlib.h>
+typedef struct GRAPHMATRIX_STRU
+{
+    int size; //图中结点的个数
+    int** graph; //二维数组保存图
+}GraphMatrix;
+
+GraphMatrix* InitGraph(int num)  //邻接矩阵初始化
+{
+    int i;
+    int j;
+    GraphMatrix* graphMatrix = (GraphMatrix*)malloc(sizeof(GraphMatrix));
+    graphMatrix->size = num;
+    graphMatrix->graph = (int**)malloc(sizeof(int*) * graphMatrix->size);
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        graphMatrix->graph[i] = (int*)malloc(sizeof(int) * graphMatrix->size);
+    }
+
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        for (j = 0; j < graphMatrix->size; j++)
+        {
+            graphMatrix->graph[i][j] = MAX;
+        }
+    }
+    return graphMatrix;
+}
+
+void ReadGraph(GraphMatrix* graphMatrix)
+{
+    int vex1, vex2, weight;
+    //输入方式为点 点 权值，权值为0，则输入结束
+    scanf("%d %d %d", &vex1, &vex2, &weight);
+    while (weight != 0)
+    {
+        graphMatrix->graph[vex1][vex2] = weight;
+        scanf("%d %d %d", &vex1, &vex2, &weight);
+    }
+}
+
+void Dijkstra(GraphMatrix* graphMatrix)
+{
+    int source = 0, vex;
+    int* found = (int*)malloc(sizeof(int) * graphMatrix->size);
+    int* path = (int*)malloc(sizeof(int) * graphMatrix->size);
+    int* distance = (int*)malloc(sizeof(int) * graphMatrix->size);
+
+    for (int i = 0; i < graphMatrix->size; i++) //初始化
+    {
+        found[i] = 0;
+        path[i] = 0;
+        distance[i] = graphMatrix->graph[source][i];
+    }
+    found[source] = 1;
+
+    for (int i = 0; i < graphMatrix->size; i++)
+    {
+        int min = MAX;
+        for (int j = 0; j < graphMatrix->size; j++) //寻找距离最小的点
+        {
+            if (distance[j] < min && found[j] == 0)
+            {
+                min = distance[j];
+                vex = j;
+            }
+        }
+        if (min < MAX) //找到最小值
+        {
+            found[vex] = 1; //标记已找到
+            for (int j = 0; j < graphMatrix->size; j++) //更新距离
+            {
+                if (found[j] == 0 && graphMatrix->graph[vex][j] != MAX)
+                {
+                    if (min + graphMatrix->graph[vex][j] < distance[j])
+                    {
+                        distance[j] = min + graphMatrix->graph[vex][j];
+                        path[j] = vex; //记录当前结点j的前驱为vex
+                    }
+                }
+            }
+        }
+    }
+    
+    //输出路径
+    for (int i = 1; i < graphMatrix->size; i++)
+    {
+        int* arr = (int*)malloc(sizeof(int) * graphMatrix->size);
+        for (int j = 0; j < graphMatrix->size; j++)
+            arr[j] = -1;
+        printf("%d->%d:%d\n", source, i, distance[i]);
+        int j = i, t = 0;
+        while (j != source)
+        {
+            arr[t] = j;
+            t++;
+            if (path[j] == source)
+                arr[t] = source;
+            j = path[j];
+        }
+        for (int t = graphMatrix->size - 1; t >= 0; t--)
+        {
+            if (arr[t] != -1 && t != 0)
+                printf("%d->", arr[t]);
+            if (t == 0)
+                printf("%d", arr[t]);
+        }
+        printf("\n");
+    }
+}
+
+int main()
+{
+    GraphMatrix* graphMatrix = InitGraph(6);
+    ReadGraph(graphMatrix);
+    Dijkstra(graphMatrix);
+}
+
+
+
+
+
+---------------------------------------
+
+
+
+
+
+#include <stdlib.h>
+#include <stdio.h>
+
+typedef struct GRAPHLISTNODE_STRU
+{
+    int nodeno;  /*图中结点的编号 */
+    struct GRAPHLISTNODE_STRU* next;  /*指向下一个结点的指针 */
+}GraphListNode;
+
+typedef struct GRAPHLIST_STRU
+{
+    int size; /* 图中结点的个数 */
+    GraphListNode* graphListArray; /*图的邻接表 */
+}GraphList;
+
+GraphList* InitGraph(int num) //邻接表初始化
+{
+    int i;
+    GraphList* graphList = (GraphList*)malloc(sizeof(GraphList));
+    graphList->size = num;
+    graphList->graphListArray = (GraphListNode*)malloc(sizeof(GraphListNode) * num);
+    for (i = 0; i < num; i++)
+    {
+        graphList->graphListArray[i].next = NULL;
+        graphList->graphListArray[i].nodeno = i;
+    }
+    return graphList;
+}
+
+void ReadGraph(GraphList* graphList)  //创建邻接表
+{
+    int vex1, vex2;
+    GraphListNode* tempNode = NULL;
+
+    /** 输入方式为点 点 ，点为-1，则输入结束 **/
+    scanf("%d %d", &vex1, &vex2);
+    while (vex1 >= 0 && vex2 >= 0)
+    {
+        tempNode = (GraphListNode*)malloc(sizeof(GraphListNode));
+        tempNode->nodeno = vex2;
+        tempNode->next = NULL;
+        /**采用头插法**/
+        tempNode->next = graphList->graphListArray[vex1].next;
+        graphList->graphListArray[vex1].next = tempNode;
+        scanf("%d %d", &vex1, &vex2);
+    }
+}
+
+typedef int DataType;
+struct Node {
+    DataType data;
+    struct Node* next;
+};
+typedef struct Node* PNode;
+typedef struct Node* LinkStack;
+
+LinkStack SetNullStack_Link()
+{
+    LinkStack top = (LinkStack)malloc(sizeof(struct Node));
+    if (top != NULL) top->next = NULL;
+    else printf("Alloc failure");
+    return top;
+}
+
+int IsNullStack_link(LinkStack top)
+{
+    if (top->next == NULL)
+        return 1;
+    else
+        return 0;
+}
+
+void Push_link(LinkStack top, DataType x)
+{
+    PNode p;
+    p = (PNode)malloc(sizeof(struct Node));
+    if (p == NULL)
+        printf("Alloc failure");
+    else
+    {
+        p->data = x;
+        p->next = top->next;
+        top->next = p;
+    }
+}
+
+void Pop_link(LinkStack top)
+{
+    PNode p;
+    if (top->next == NULL)
+        printf("it is empty stack!");
+    else
+    {
+        p = top->next;
+        top->next = p->next;
+        free(p);
+    }
+}
+
+DataType Top_link(LinkStack top)
+{
+    if (top->next == NULL)
+    {
+        printf("It is empty stack!");
+        return 0;
+    }
+    else
+        return top->next->data;
+}
+
+int TopologicalSort(GraphList* graphList)
+{
+    int vex;
+    int count = 0; //用于判断是否完成拓扑排序
+    int* inpoint = (int*)malloc(sizeof(int) * graphList->size);
+    LinkStack stack = SetNullStack_Link();
+    GraphListNode* p = NULL;
+    for (vex = 0; vex < graphList->size; vex++)
+        inpoint[vex] = 0;
+
+    for (vex = 0; vex < graphList->size; vex++) //计算各顶点的入度
+    {
+        p = graphList->graphListArray[vex].next;
+        while (p != NULL)
+        {
+            inpoint[p->nodeno]++;
+            p = p->next;
+        }
+    }
+
+    for (vex = 0; vex < graphList->size; vex++) //将入度为0的顶点入栈
+    {
+        if (inpoint[vex] == 0)
+            Push_link(stack, vex);
+    }
+    
+    while (!IsNullStack_link(stack))
+    {
+        int tempvex = Top_link(stack);
+        count++;
+        Pop_link(stack);
+        p = graphList->graphListArray[tempvex].next;
+        while (p != NULL)
+        {
+            inpoint[p->nodeno]--;  //将该结点出边表中的各顶点的入度减1
+            if (inpoint[p->nodeno] == 0)  //再减完1之后该顶点的入度为0、则入栈
+                Push_link(stack, p->nodeno);
+            p = p->next;
+        }
+    }
+    if (count == graphList->size)
+        return 1;
+    else
+        return 0;
+    
+}
+
+int main()
+{
+    GraphList* graphList = NULL;
+    graphList = InitGraph(6);
+    ReadGraph(graphList);
+    int i = TopologicalSort(graphList);
+    printf("%d", i);
+}
+
+
+
+
+
+
+---------------------------------------------------
+
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+#define MAX 1000
+
+typedef struct GRAPHMATRIX_STRU
+{
+    int size; //图中结点的个数
+    int** graph; //二维数组保存图
+}GraphMatrix;
+
+GraphMatrix* InitGraph(int num)  //邻接矩阵初始化
+{
+    int i;
+    int j;
+    GraphMatrix* graphMatrix = (GraphMatrix*)malloc(sizeof(GraphMatrix));
+    graphMatrix->size = num;
+    graphMatrix->graph = (int**)malloc(sizeof(int*) * graphMatrix->size);
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        graphMatrix->graph[i] = (int*)malloc(sizeof(int) * graphMatrix->size);
+    }
+
+    for (i = 0; i < graphMatrix->size; i++)
+    {
+        for (j = 0; j < graphMatrix->size; j++)
+        {
+            graphMatrix->graph[i][j] = MAX;
+        }
+    }
+    return graphMatrix;
+}
+
+void ReadGraph(GraphMatrix* graphMatrix)
+{
+    for (int i = 0; i < graphMatrix->size; i++)
+        for (int j = 0; j < graphMatrix->size; j++)
+            scanf("%d", &graphMatrix->graph[i][j]);
+}
+
+void Dijkstra(GraphMatrix* graphMatrix)
+{
+    int source = 0, vex;
+    int* found = (int*)malloc(sizeof(int) * graphMatrix->size);
+    int* path = (int*)malloc(sizeof(int) * graphMatrix->size);
+    int* distance = (int*)malloc(sizeof(int) * graphMatrix->size);
+    int* max = (int*)malloc(sizeof(int) * graphMatrix->size);
+
+    for (int i = 0; i < graphMatrix->size; i++)
+        max[i] = -1;
+
+    while (source < graphMatrix->size)
+    {
+        for (int i = 0; i < graphMatrix->size; i++) //初始化
+        {
+            found[i] = 0;
+            path[i] = 0;
+            distance[i] = graphMatrix->graph[source][i];
+        }
+        found[source] = 1;
+
+        for (int i = 0; i < graphMatrix->size; i++)
+        {
+            int min = MAX;
+            for (int j = 0; j < graphMatrix->size; j++) //寻找距离最小的点
+            {
+                if (distance[j] < min && found[j] == 0)
+                {
+                    min = distance[j];
+                    vex = j;
+                }
+            }
+            if (min < MAX) //找到最小值
+            {
+                found[vex] = 1; //标记已找到
+                for (int j = 0; j < graphMatrix->size; j++) //更新距离
+                {
+                    if (found[j] == 0 && graphMatrix->graph[vex][j] != MAX)
+                    {
+                        if (min + graphMatrix->graph[vex][j] < distance[j])
+                        {
+                            distance[j] = min + graphMatrix->graph[vex][j];
+                            path[j] = vex; //记录当前结点j的前驱为vex
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < graphMatrix->size; i++)
+        {
+            if (max[source] < distance[i] && source != i)
+                max[source] = distance[i];
+        }
+        source++;
+    }
+    int idx = 0;
+    for (int i = 0, min = max[0]; i < graphMatrix->size; i++)
+    {
+        if (max[i] < min)
+        {
+            min = max[i];
+            idx = i;
+        }
+    }
+    printf("%c", 97 + idx);
+}
+
+int main()
+{
+    int size;
+    scanf("%d", &size);
+    GraphMatrix* graphMatrix = InitGraph(size);
+    ReadGraph(graphMatrix);
+    Dijkstra(graphMatrix);
+}
+
+
+
+
+---------------------------------------------
+
+
+
+
+#include<stdio.h>
+#include<math.h>
+#include<stdlib.h>
+#define Length 100
+
+int entry_x, entry_y, exit_x, exit_y;
+int maze_size;
+int** step;
+
+struct Maze
+{
+    int size;
+    int** data;
+};
+typedef struct Maze Maze;
+
+Maze* Maze_init(int size)
+{
+    Maze* maze = (Maze*)malloc(sizeof(Maze));
+    maze->size = size;
+    maze->data = (int**)malloc(sizeof(int*) * maze->size);
+    for (int i = 0; i < maze->size; i++)
+    {
+        maze->data[i] = (int*)malloc(sizeof(int) * maze->size);
+    }
+
+    for (int i = 0; i < maze->size; i++)
+    {
+        for (int j = 0; j < maze->size; j++)
+        {
+            scanf("%d", &maze->data[i][j]);
+        }
+    }
+    return maze;
+}
+
+typedef struct node {
+    int x;
+    int y;
+    int value;
+}Node;
+Node qu[Length];//用来模拟优先队列
+int front = -1, rear = -1;
+
+int g(int x, int y)
+{//计算该坐标与终点的曼哈顿距离
+    return abs(exit_x - x) + abs(exit_y - y);
+}
+//实现优先队列的插入
+void Insert(int x, int y, int value) {
+    if (rear == -1) {
+        rear++;
+        qu[rear].x = x;
+        qu[rear].y = y;
+        qu[rear].value = value;
+    }
+    else {
+        int r = rear;
+        while (value < qu[r].value && r >= front + 1) {
+            qu[r + 1] = qu[r];
+            r--;
+        }
+        qu[r + 1].x = x;
+        qu[r + 1].y = y;
+        qu[r + 1].value = value;
+        rear++;
+    }
+}
+
+//得到模拟优先队列中的最小权值坐标
+Node Get()
+{
+    return qu[++front];
+}
+
+int Judge(Maze* maze, int x, int y)
+{
+	if (x < 0 || x >= maze->size || y < 0 || y >= maze->size || maze->data[x][y] == -1)
+		return 0;
+	else
+		return 1;
+}
+
+//最短路径
+void Dijkstra(Maze* maze)
+{
+	Node** come_from = (Node**)malloc(sizeof(Node*) * maze->size);
+	int** cost = (int**)malloc(sizeof(int*) * maze->size);
+	for (int i = 0; i < maze->size; i++)
+	{
+		come_from[i] = (Node*)malloc(sizeof(Node) * maze->size);
+		cost[i] = (int*)malloc(sizeof(int) * maze->size);
+	}
+	come_from[entry_x][entry_y].x = -1;
+	come_from[entry_x][entry_y].y = -1;
+	for (int i = 0; i < maze->size; i++)
+		for (int j = 0; j < maze->size; j++)
+			cost[i][j] = 0;
+	cost[entry_x][entry_y] = maze->data[entry_x][entry_y];
+	int x, y;
+	int pre_x, pre_y;
+	Insert(entry_x, entry_y, step[entry_x][entry_y] + maze->data[entry_x][entry_y]);
+	while (front != rear)
+	{
+		Node q;
+		q = Get();
+		x = q.x;
+		y = q.y;
+		if (x == exit_x && y == exit_y)
+		{
+			int pre_x, pre_y, x2, y2, idx = -1;
+			pre_x = x, pre_y = y;
+			while (!(pre_x == -1 && pre_y == -1))
+			{
+				idx++;
+				printf("(%d %d)", pre_x, pre_y);
+				x2 = pre_x;
+				y2 = pre_y;
+				pre_x = come_from[x2][y2].x;
+				pre_y = come_from[x2][y2].y;
+			}
+			return;
+		}
+		int mov = 0;
+		while (mov < 4)
+		{
+			switch (mov)
+			{
+			case 0:pre_x = x; pre_y = y + 1; break;
+			case 1:pre_x = x + 1; pre_y = y; break;
+			case 2:pre_x = x; pre_y = y - 1; break;
+			case 3:pre_x = x - 1; pre_y = y; break;
+			}
+			if (Judge(maze, pre_x, pre_y))
+			{
+				if ((step[pre_x][pre_y] == 0 && !(pre_x == entry_x && pre_y == entry_y)) || (step[x][y] + 1 < step[pre_x][pre_y]))
+				{
+					come_from[pre_x][pre_y].x = x;
+					come_from[pre_x][pre_y].y = y;
+					cost[pre_x][pre_y] = cost[x][y] + maze->data[x][y];
+					step[pre_x][pre_y] = step[x][y] + 1;
+					Insert(pre_x, pre_y, step[pre_x][pre_y] + cost[pre_x][pre_y]);
+				}
+			}
+			mov++;
+		}
+	}
+}
+
+int main()
+{
+    scanf("%d %d", &maze_size, &maze_size);
+    scanf("%d %d %d %d", &entry_x, &entry_y, &exit_x, &exit_y);
+    Maze* maze = Maze_init(maze_size);
+    step = (int**)malloc(sizeof(int*) * maze_size);//从起点到该坐标的最短步数
+    for (int i = 0; i < maze->size; i++)
+        step[i] = (int*)malloc(sizeof(int) * maze->size);
+	for (int i = 0; i < maze->size; i++)
+		for (int j = 0; j < maze->size; j++)
+			step[i][j] = 0;
+	Dijkstra(maze);
+}

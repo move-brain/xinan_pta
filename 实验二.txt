@@ -1,0 +1,705 @@
+int a=0;
+void EnQueue_seq(SeqQueue squeue, DataType x)  
+{ 
+    if(!((squeue->r+1)%(squeue->Max)==squeue->f))
+    {
+squeue->elem[squeue->r]=x;
+     squeue->r++;
+        
+    }else{
+//         a++;
+//         if(a==1){
+               printf("It is FULL Queue!");
+// }
+     
+    }
+
+}
+int DeQueue_seq(SeqQueue squeue)  
+{
+   
+   if(!IsNullQueue_seq(squeue)){
+      squeue->f++;}
+}
+DataType FrontQueue_seq(SeqQueue squeue) 
+{
+    if(IsNullQueue_seq(squeue))
+    {
+printf("It is empty queue!");
+return NULL;
+    }else{
+ DataType x;
+       x=squeue->elem[squeue->f];
+        return x;
+    }
+}
+
+
+
+
+------------------------------------------------------------------------------------
+
+
+void Push_seq(SeqStack sstack, int x)
+{
+    if(sstack->top >= (sstack->MAX-1))
+        printf("overflow!\n");
+    else
+     {
+         sstack->top++;
+         sstack->elem[sstack->top]=x;
+     }
+}
+void Hexconversion(SeqStack sstack, int n)
+{
+    while(n)
+    {
+        int tmp = n%16;
+        switch(tmp)
+        {
+            case 10:tmp='A';break;
+            case 11:tmp='B';break;
+            case 12:tmp='C';break;
+            case 13:tmp='D';break;
+            case 14:tmp='E';break;
+            case 15:tmp='F';break;
+        }
+        Push_seq(sstack,tmp);
+        n=n/16;
+    }
+    while(!IsNullStack_seq(sstack))
+    {
+        n=Top_seq(sstack);
+        if(n<10)
+            printf("%d",n);
+        else printf("%c",n);
+        Pop_seq(sstack);
+    }
+}
+
+
+---------------------------------------------------------------------------------------------------
+
+
+#include<stdio.h>
+#include<stdlib.h>
+
+struct MAZE_STRU
+{
+    int size;
+    int **data;
+};
+typedef struct MAZE_STRU Maze;
+typedef int DataType;
+struct Node
+{
+    DataType data;
+    struct Node* next;
+};
+typedef struct Node *PNode;
+typedef struct Node *top,*LinkStack;
+
+LinkStack SetNullStack_Link()
+{
+    LinkStack top = (LinkStack)malloc(sizeof(struct Node));
+    if(top!=NULL)   top->next = NULL;
+    else  printf("Alloc failure");
+    return top;
+}
+
+int IsNullStack_link(LinkStack top)
+{
+    if(top->next==NULL)
+        return 1;
+    else return 0;
+}
+
+void Push_link(LinkStack top, DataType x)
+{
+    PNode p;
+    p = (PNode)malloc(sizeof(struct Node));
+    if(p == NULL)
+        printf("Alloc failure");
+    else
+    {
+        p->data=x;
+        p->next=top->next;
+        top->next=p;
+    }
+}
+
+void Pop_link(LinkStack top)
+{
+    PNode p;
+    if(top->next==NULL)
+        printf("it is empty stack");
+    else
+    {
+        p=top->next;
+        top->next=p->next;
+        free(p);
+    }
+}
+DataType Top_link(LinkStack top)
+{
+    if(IsNullStack_link(top)==1)
+        printf("it is empty stack!");
+    else{
+        return top->next->data;
+    }
+}
+
+Maze* InitMaze(int size)
+{
+    int i;
+    Maze*maze=(Maze*)malloc(sizeof(Maze));
+    maze->size=size;
+    maze->data=(int **)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        maze->data[i]=(int*)malloc(sizeof(int)*maze->size);
+    }
+    return maze;
+}
+void ReadMaze(Maze* maze)
+{   int i,j;
+    for(i=0;i<maze->size;i++)
+    {
+
+        for(j=0;j<maze->size;j++)
+        scanf("%d",&maze->data[i][j]);
+    }
+}
+int MazeDFS(int entryX, int entryY, int exitX, int exitY, Maze * maze)
+{
+    int direction[8][2] = {{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,1},{-1,0},{-1,1}};
+    LinkStack linkStackX = NULL;
+    LinkStack linkStackY = NULL;
+    int posX,posY;
+    int preposX,preposY;
+    int **mark;
+    int i,j;
+    int mov;
+    
+    mark=(int**)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+        mark[i]=(int*)malloc(sizeof(int)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        for(j=0;j<maze->size;j++)
+            mark[i][j]=0;
+    }
+    linkStackX=SetNullStack_Link();
+    linkStackY=SetNullStack_Link();
+    mark[entryX][entryY]=1;
+    Push_link(linkStackX, entryX);
+    Push_link(linkStackY, entryY);
+    
+    while(!IsNullStack_link(linkStackX))
+    {
+        preposX=Top_link(linkStackX);
+        preposY=Top_link(linkStackY);
+        Pop_link(linkStackX);
+        Pop_link(linkStackY);
+        mov=0;
+        while(mov<8)
+        {
+            posX=preposX+direction[mov][0];
+            posY=preposY+direction[mov][1];
+            if(posX==exitX&&posY==exitY)
+            {
+                Push_link(linkStackX, preposX);
+                Push_link(linkStackY, preposY);
+                printf("%d %d;",exitX,exitY);
+                while(!IsNullStack_link(linkStackX))
+                {
+                    posX=Top_link(linkStackX);
+                    posY=Top_link(linkStackY);
+                    Pop_link(linkStackX);
+                    Pop_link(linkStackY);
+                    printf("%d %d;",posX,posY);
+                }
+                return 1;
+            }
+            if(maze->data[posX][posY] == 0 && mark[posX][posY]==0)
+            {
+                mark[posX][posY]=1;
+                Push_link(linkStackX,preposX);
+                Push_link(linkStackY,preposY);
+                preposX=posX;
+                preposY=posY;
+                mov=0;
+            }
+            else  mov++;
+        }
+    }
+    return 0;
+}
+
+int main()
+{
+    Maze* maze;
+    int mazeSize;
+    int entryX,entryY,exitX,exitY;
+    int find=0;
+    scanf("%d",&mazeSize);
+    maze=InitMaze(mazeSize);
+    ReadMaze(maze);
+    scanf("%d%d%d%d",&entryX,&entryY,&exitX,&exitY);
+    find=MazeDFS(entryX,entryY,exitX,exitY,maze);
+    if(find==0)
+        printf("找不到路径！");
+    return 0;
+}
+
+
+
+---------------------------------------------------------------------------------------------------------------------------
+
+
+#include<stdio.h>
+#include<stdlib.h>
+ 
+typedef int DataType;
+struct Node
+{
+    DataType data;
+    struct Node * link;
+};
+typedef struct Node * PNode;
+struct Queue
+{
+    PNode f;
+    PNode r;
+};
+typedef struct Queue * LinkQueue;
+struct MAZE_STRU
+{
+    int size;
+    int **data;
+};
+typedef struct MAZE_STRU Maze;
+
+LinkQueue SetNullQueue_Link()//创建空队列
+{
+    LinkQueue lqueue;
+    lqueue = (LinkQueue)malloc(sizeof(struct Queue));
+    if(lqueue!=NULL)
+    {
+        lqueue->f = NULL;
+        lqueue->r = NULL;
+    }
+    else
+        printf("Alloc failure!\n");
+    return lqueue;
+}
+
+int IsNullQueue_Link(LinkQueue lqueue)
+{
+    return(lqueue->f==NULL);
+}
+
+void EnQueue_link(LinkQueue lqueue, DataType x)
+{
+    PNode p;
+    p = (PNode)malloc(sizeof(struct Node));
+    if(p==NULL)
+        printf("Alloc failure!");
+    else
+    {
+        p->data = x;
+        p->link = NULL;
+        if(lqueue->f == NULL)
+        {
+            lqueue->f=p;
+            lqueue->r=p;
+        }
+        else{
+            lqueue->r->link=p;
+            lqueue->r=p;
+        }
+    }
+}
+
+void DeQueue_link(LinkQueue lqueue)
+{
+    PNode p;
+    if(lqueue->f==NULL)
+        printf("It is empty queue!\n");
+    else
+    {
+        p = lqueue->f;
+        lqueue->f = lqueue->f->link;
+        free(p);
+    }
+}
+
+DataType FrontQueue_link(LinkQueue lqueue)
+{
+    if(lqueue->f==NULL)
+    {
+        printf("It is empty queue!\n");
+        return 0;
+    }
+    else
+        return lqueue->f->data;
+}
+Maze* InitMaze(int size)
+{
+    int i;
+    Maze*maze=(Maze*)malloc(sizeof(Maze));
+    maze->size=size;
+    maze->data=(int **)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        maze->data[i]=(int*)malloc(sizeof(int)*maze->size);
+    }
+    return maze;
+}
+void ReadMaze(Maze* maze)
+{   int i,j;
+    for(i=0;i<maze->size;i++)
+    {
+ 
+        for(j=0;j<maze->size;j++)
+        scanf("%d",&maze->data[i][j]);
+    }
+}
+void WriteMaze(Maze* maze)
+{
+    int i,j;
+    printf("迷宫的结构如下：\n");
+    for(i=0;i<maze->size;i++)
+    {
+        for(j=0;j<maze->size;j++)
+        {
+            printf("%5d",maze->data[i][j]);
+        }
+        printf("\n");
+    }
+}
+int MazeBFS(int entryX,int entryY,int exitX,int exitY,Maze *maze)
+{
+    LinkQueue linkQueueX = NULL;
+    LinkQueue linkQueueY = NULL;
+    int direction[8][2]={{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1}};
+    
+    
+    int posX,posY;
+    int preposX,preposY;
+    int ** preposMarkX;
+    int ** preposMarkY;
+    int **mark;
+    int i,j,mov;
+     preposMarkX=(int **)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        preposMarkX[i]=(int *)malloc(sizeof(int)*maze->size);
+    }
+    preposMarkY = (int **)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        preposMarkY[i]=(int *)malloc(sizeof(int)*maze->size);
+    }
+    mark = (int **)malloc(sizeof(int*)*maze->size);
+    for(i=0;i<maze->size;i++)
+    {
+        mark[i]=(int *)malloc(sizeof(int)*maze->size);
+    }
+    for(i=0;i<maze->size;i++)
+    {
+        for(j=0;j<maze->size;j++)
+        {
+            preposMarkX[i][j]=-1;
+            preposMarkY[i][j]=-1;
+            mark[i][j] = 0;
+        }
+     }
+    
+    linkQueueX = SetNullQueue_Link();
+    linkQueueY = SetNullQueue_Link();
+    EnQueue_link(linkQueueX,entryX);
+    EnQueue_link(linkQueueY,entryY);
+    mark[entryX][entryY]=1;
+    while(!IsNullQueue_Link(linkQueueX))
+    {
+        preposX = FrontQueue_link(linkQueueX);
+        DeQueue_link(linkQueueX);
+        preposY = FrontQueue_link(linkQueueY);
+        DeQueue_link(linkQueueY);
+        for(mov=0;mov<8;mov++)
+        {
+            posX = preposX + direction[mov][0];
+            posY = preposY + direction[mov][1];
+            if(posX==exitX&&posY==exitY)
+            {
+                preposMarkX[posX][posY] = preposX;
+                preposMarkY[posX][posY] = preposY;
+                while(!(posX==entryX&&posY==entryY))
+                {
+                    preposX = preposMarkX[posX][posY];
+                    preposY = preposMarkY[posX][posY];
+                    if(posX==exitX&&posY==exitY)
+                        printf("%d %d;",exitX,exitY);
+                    posX = preposX;
+                    posY = preposY;
+                    printf("%d %d;",posX,posY);
+                }
+                return 1;
+             }
+            if(maze->data[posX][posY] == 0 && mark[posX][posY]==0)
+            {
+                EnQueue_link(linkQueueX,posX);
+                EnQueue_link(linkQueueY,posY);
+                mark[posX][posY] = 1;
+                preposMarkX[posX][posY] = preposX;
+                preposMarkY[posX][posY] = preposY;
+            }
+        }
+    }
+    return 0;
+}
+
+ int main()
+ {
+     Maze* maze;
+     int mazeSize;
+     int entryX,entryY,exitX,exitY;
+     int find=0;
+     scanf("%d",&mazeSize);
+     maze=InitMaze(mazeSize);
+     ReadMaze(maze);
+     scanf("%d%d%d%d",&entryX,&entryY,&exitX,&exitY);
+     find = MazeBFS(entryX,entryY,exitX,exitY,maze);
+     if(find==0)
+         printf("找不到路径！");
+     return 0;
+ }
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef int DataType;
+struct Queue
+{
+    int Max;
+    int f,r;
+    DataType * elem;
+};
+typedef struct Queue * SeqQueue;
+
+SeqQueue SetNullQueue_Seq(int m)
+{
+    SeqQueue squeue;
+    squeue = (SeqQueue)malloc(sizeof(struct Queue));
+    if(squeue == NULL)
+    {
+        printf("Alloc failure\n");
+        return NULL;
+    }
+        squeue->elem = (int *)malloc(sizeof(DataType)*m);
+        if(squeue->elem!=NULL)
+        {
+            squeue->Max = m;
+            squeue->f = 0;
+            squeue->r = 0;
+            return squeue;
+        }
+}
+
+int IsNullQueue_seq(SeqQueue squeue)
+{
+    return (squeue->f==squeue->r);
+}
+
+void EnQueue_seq(SeqQueue squeue, DataType x)
+{
+    if((squeue->r+1) % squeue->Max == squeue->f)
+        printf("It is FULL Queue!");
+    else
+    {
+        squeue->elem[squeue->r] = x;
+        squeue->r = (squeue->r+1)%squeue->Max;
+    }
+}
+
+void DeQueue_seq(SeqQueue squeue)
+{
+    if(IsNullQueue_seq(squeue)==1)
+        printf("It is empty queue!\n");
+    else
+        squeue->f = (squeue->f+1)%squeue->Max;
+}
+
+DataType FrontQueue_seq(SeqQueue squeue)
+{
+    if(squeue->f==squeue->r)
+        printf("It is empty queue!\n");
+    else
+        return squeue->elem[squeue->f];
+}
+
+//判断当前状态下农夫的位置
+int FarmerOnRight(int status)
+{
+    return (0!=(status&0x08));
+}
+//判断当前状态下狼的位置
+int WolfOnRight(int status)
+{
+    return (0!=(status&0x04));
+}
+//判断当前位置下白菜的位置
+int CabbageOnRight(int status)
+{
+    return (0!=(status&0x02));
+}
+//判断当前状态下羊是否在南岸
+int GoatOnRight(int status)
+{
+    return (0!=(status&0x01));
+}
+int IsSafe(int status)
+{
+    if((GoatOnRight(status)==CabbageOnRight(status))&&(GoatOnRight(status)!=FarmerOnRight(status)))
+        return 0;
+    if((GoatOnRight(status)==WolfOnRight(status))&&(GoatOnRight(status)!=FarmerOnRight(status)))
+        return 0;
+    return 1;
+}
+
+void FarmerRiver()
+{
+    int i,movers,nowstatus,newstatus;
+    int status[16];
+    SeqQueue moveTo;
+    moveTo = SetNullQueue_Seq(20);
+    EnQueue_seq(moveTo,0x00);
+    for(i=0;i<16;i++)
+        status[i]=-1;
+    status[0]=0;
+    while(!IsNullQueue_seq(moveTo)&&(status[15]==-1))
+    {
+        nowstatus = FrontQueue_seq(moveTo);
+        DeQueue_seq(moveTo);
+        for(movers=1;movers<=8;movers<<=1)
+            if((0!=(nowstatus&0x08))==(0!=(nowstatus&movers)))
+            {
+                newstatus=nowstatus^(0x08|movers);
+                if(IsSafe(newstatus)&&(status[newstatus]==-1))
+                {
+                    status[newstatus]=nowstatus;
+                    EnQueue_seq(moveTo,newstatus);
+                }
+            }
+    }
+    if(status[15]!=-1)
+    {
+        for(nowstatus=15;nowstatus>=0;nowstatus=status[nowstatus])
+        {
+            printf("%d ",nowstatus);
+            if(nowstatus==0)
+                return;
+        }
+    }
+    else printf("No solution.\n");
+}
+
+int main()
+{
+    FarmerRiver();
+    return 0;
+}
+
+---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+#include<stdio.h>
+#include<stdlib.h>
+
+int step(int t1,int t2)
+{
+    if(t2>t1)
+        return t2-t1;
+    else
+        return t2+3-t1;
+}
+
+int times(int i,int j,int t1,int t2,int t3)
+{
+    int k;
+    k = i-j;
+    if(k==0)
+    {
+        return t3;
+    }
+    if(k>0)
+    {
+        return times(j,i-j,t2,t3,t1)+step(t1,t3);
+    }
+    if(k<0)
+    {
+        return times(i,j-i,t1,t3,t2)+step(t2,t3);
+    }
+}
+
+int main()
+{
+    int result;
+    int a=1,b=2,c=3;
+    int arr[3]={3,5,8};
+    int index = 0;
+    int max_num = -1,mid_num = -1;
+    int max_index = -1,mid_index = -1;
+    for(;index<3;index++)
+    {
+        if(max_num<arr[index])
+        {
+            mid_num = max_num;
+            mid_index = max_index;
+            max_num = arr[index];
+            max_index = index;
+        }
+        if(mid_num<arr[index]&&arr[index]!=max_num)
+        {
+            mid_num = arr[index];
+            mid_index = index;
+        }
+    }
+    c = max_index + 1;
+    b = mid_index + 1;
+    if((c==1&&b==2)||(c==2&&b==1))
+        a=3;
+    else if((c==2&&b==3)||(c==3&&b==2))
+        a=1;
+    else
+        a=2;
+    result = times(arr[a-1],arr[b-1],a,b,c);
+    printf("%d",result);
+    return 0;
+}
+
+
+
+
+
+
+

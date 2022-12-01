@@ -1,0 +1,370 @@
+
+int InsertPost_link(LinkList llist, DataType x, DataType y){
+    
+    
+
+PNode p=NULL,a=NULL;
+ p = (struct Node*)malloc(sizeof(struct Node));
+ a= (struct Node*)malloc(sizeof(struct Node));
+p->data=y;
+p->next=NULL;
+a->next=llist;
+llist=llist->next;
+int is_not=0;
+while(llist!=NULL){
+    if(llist->data==x){
+       is_not=1; 
+
+ p->next=llist->next;
+ llist->next=p;
+        break;
+    }else{
+ llist=llist->next;
+    a=a->next;
+    }
+}
+if(is_not==0){
+printf("not exist data %d\n",x);
+}
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------
+
+
+
+
+void DelNode_Link(LinkList head,int deldata)
+{
+    PNode p=NULL;
+
+  p = (struct Node*)malloc(sizeof(struct Node));
+    p->next=head;
+head=head->next;
+int is_not=1;
+while(head!=NULL){
+if(head->data==deldata){
+    is_not=0;
+ p->next->next=head->next;
+    break;
+}else{
+    p=p->next;
+    head=head->next;
+    
+}
+}
+if(is_not==1){
+printf("not exist %d\n",deldata);
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------------------
+
+
+
+
+
+void MoveMaxToTail (LinkList H )
+{
+   PNode max_ = (struct Node*)malloc(sizeof(struct Node));
+PNode last_= (struct Node*)malloc(sizeof(struct Node));
+PNode max__= (struct Node*)malloc(sizeof(struct Node));
+PNode mo_max= (struct Node*)malloc(sizeof(struct Node));
+mo_max->next=H;
+max_->next=H->next;
+max__=H;
+H=H->next;
+int max=H->data;
+H=H->next;
+max__=max__->next;
+while(H!=NULL){
+if(H->data>=max){
+max_->next=H;
+max=H->data;
+mo_max->next=max__;
+}
+
+    if(H->next==NULL){
+last_->next=H;
+    }
+    H=H->next;
+    max__=max__->next;
+}
+//printf("%d",max_->next->data);
+//printf("%d",mo_max->next->data);
+//printf("%d",last_->next->data);
+last_->next->next=max_->next;
+mo_max->next->next=max_->next->next;
+max_->next->next=NULL;
+
+}
+
+
+
+
+
+------------------------------------------------------------------------------
+
+
+
+
+PNode mergeNDeduplicateList(PNode tail1, PNode tail2)
+{
+    int temp;
+    PNode p,q;
+    LinkList head=tail1->next->next;
+    tail1->next->next=tail2->next->next;
+    tail2->next->next=NULL;
+    
+    p=head;
+    q=head->next;
+    for(p=head;p->next!=NULL;p=p->next)
+        for(q=p->next;q!=NULL;q=q->next)
+        {
+            if(p->data>q->data)
+            {
+                temp=p->data;
+                p->data=q->data;
+                q->data=temp;
+            }
+        }
+    p=head;
+    q=p->next;
+    while(q!=NULL)
+    {
+        if(p->data==q->data)
+        {
+            if(q==tail2->next)
+            {
+                tail2->next=p;
+                p->next=NULL;
+            }
+            else
+            {
+                p->next=q->next;
+                free(q);
+                q=p->next;
+            }
+        }
+        else
+        {
+            p=q;
+            q=q->next;
+        }
+    }
+    tail2->next->next=head;
+    return tail2;
+}
+
+
+
+------------------------------------------------------------------
+
+
+
+PNode  Move_Odd_Even(LinkList tail)
+{
+   PNode head=tail->next,pre=head->next,q=pre->next;
+
+   free(head);
+   LinkList head1=(LinkList)malloc(sizeof(struct Node));
+    PNode pre1=head1;
+   LinkList head2=(LinkList)malloc(sizeof(struct Node));
+    PNode pre2=head2;
+   
+   while(q!=head->next)
+      {
+       if(pre->data%2==0)
+       {
+           pre->next=pre1->next;
+           pre1->next=pre;
+           pre1=pre1->next;
+       }
+       else
+       {
+           pre->next=pre2->next;
+           pre2->next=pre;
+           pre2=pre2->next;
+       }
+       pre=q;
+       q=q->next;
+   }
+   head1=head1->next;
+   pre2->next=head1;
+   pre1->next=head2;
+   return pre1;
+}
+
+
+
+
+
+
+--------------------------------------------------------------------------------------
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+struct tagNode{
+	int coef;//系数 
+	int exp;//指数 
+	struct tagNode *next;
+};
+typedef struct tagNode *PNode;
+typedef struct tagNode *Poly;
+
+Poly CreatePoly(){
+    PNode head;
+    PNode q,p;
+	int data1;
+	int data2;
+	head=(struct tagNode*)malloc(sizeof(struct tagNode));
+	head->next=NULL;
+	q=head;
+    scanf("%d,%d",&data1,&data2);
+    
+    while (data1 != 0||data2!=0)
+    {   
+        p= (struct tagNode*)malloc(sizeof(struct tagNode));
+        p->coef = data1;
+        p->exp = data2;
+        p->next=q->next; 
+		q->next=p; 
+        q=q->next;
+        scanf("%d,%d",&data1,&data2);
+    }
+    return head;
+}
+
+void SortPoly(Poly head){
+	PNode p;
+	PNode q;
+	int m,n;
+	for(p=head->next;p!=NULL;p=p->next){
+	for(q=p->next;q!=NULL;q=q->next){
+	
+	if(p->exp > q->exp){
+		m=p->exp;
+		p->exp=q->exp;
+		q->exp=m;
+		n=p->coef;
+		p->coef=q->coef;
+		q->coef=n;
+	}
+}
+}
+
+}
+
+void PrintPoly(Poly head){
+	PNode p=head->next;
+	while(p!=NULL){
+	printf("%d,%d ",p->coef,p->exp);
+		p=p->next;
+	}
+	printf("\n");
+}
+
+void Add_Poly (Poly pa,Poly pb){
+	PNode p=pa->next;
+	PNode q=pb->next;
+
+	PNode pre=pa;
+	PNode u;
+	int x;
+	while(p!=NULL&&q!=NULL){
+		if(p->exp < q->exp){
+			pre=p;
+			p=p->next;
+		}//end69
+		else if(p->exp == q->exp){
+		//	printf("%d %d\n",p->coef,q->coef);
+			x=p->coef + q->coef;
+		//	printf("x=%d\n",x);
+			if(x!=0){
+				p->coef=x;
+				pre=p;
+			}//end75
+			else{
+				pre->next=p->next;
+				free(p);
+			}//end79
+			p=pre->next;
+			u=q;
+			q=q->next;
+			free(u);
+		}//end73
+    
+		else{
+			u=q->next;
+			q->next=p;
+			pre->next=q;
+			pre=q;
+			q=u;
+		}//end89
+	}//end68
+		if(q){
+			pre->next=q;
+		}
+		free(pb);
+}
+
+/*void destory(Poly head){
+	PNode p,q;
+	p=head;
+	while(p!=NULL){
+		q=p;
+		p=p->next;
+		free(q);
+	}
+	free(head);
+}*/
+int main(){
+	Poly pa,pb; 
+	pa=CreatePoly();
+	pb=CreatePoly();
+    SortPoly(pa);
+    SortPoly(pb);
+   // PrintPoly(pa);
+    Add_Poly (pa,pb);
+	PrintPoly (pa);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
